@@ -1,0 +1,142 @@
+<div class="container">
+  <h1>📦 Gestión de Inventario</h1>
+  <p class="subtitle">Consumiendo servicio SOAP con Angular</p>
+
+  <!-- Mensaje de estado -->
+  @if (mensaje) {
+    <div class="alert" [class.success]="tipoMensaje === 'success'" [class.error]="tipoMensaje === 'error'">
+      {{ mensaje }}
+    </div>
+  }
+
+  <!-- Formulario -->
+  <div class="card form-card">
+    <h2>{{ editandoId ? '✏️ Editar Producto' : '➕ Nuevo Producto' }}</h2>
+    
+    <form (ngSubmit)="guardarProducto()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <input 
+            type="text" 
+            id="descripcion" 
+            [(ngModel)]="nuevoProducto.descripcion" 
+            name="descripcion"
+            placeholder="Ingrese la descripción del producto"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo de Producto</label>
+          <select 
+            id="tipo" 
+            [(ngModel)]="nuevoProducto.idTipo" 
+            name="idTipo"
+            required>
+            <option [value]="0" disabled>Seleccione un tipo</option>
+            @for (tipo of tipos; track tipo.id) {
+              <option [value]="tipo.id">{{ tipo.tipo }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="valor">Valor ($)</label>
+          <input 
+            type="number" 
+            id="valor" 
+            [(ngModel)]="nuevoProducto.valor" 
+            name="valor"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="costo">Costo ($)</label>
+          <input 
+            type="number" 
+            id="costo" 
+            [(ngModel)]="nuevoProducto.costo" 
+            name="costo"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+            required>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="cargando">
+          {{ editandoId ? 'Actualizar' : 'Crear' }} Producto
+        </button>
+        @if (editandoId) {
+          <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+            Cancelar
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div class="card">
+    <h2>📋 Lista de Productos</h2>
+    
+    @if (cargando) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    }
+
+    @if (!cargando && productos.length === 0) {
+      <p class="empty-message">No hay productos registrados</p>
+    }
+
+    @if (!cargando && productos.length > 0) {
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Costo</th>
+              <th>Ganancia</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (producto of productos; track producto.id) {
+              <tr>
+                <td>{{ producto.id }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>
+                  <span class="badge">{{ obtenerNombreTipo(producto.idTipo) }}</span>
+                </td>
+                <td class="currency">${{ producto.valor.toFixed(2) }}</td>
+                <td class="currency">${{ producto.costo.toFixed(2) }}</td>
+                <td class="currency profit">
+                  ${{ (producto.valor - producto.costo).toFixed(2) }}
+                </td>
+                <td class="actions">
+                  <button class="btn btn-edit" (click)="editarProducto(producto)" title="Editar">
+                    ✏️
+                  </button>
+                  <button class="btn btn-delete" (click)="eliminarProducto(producto.id)" title="Eliminar">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
